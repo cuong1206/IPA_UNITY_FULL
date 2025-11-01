@@ -11,16 +11,6 @@ on:
         options:
           - Release
           - Debug
-  push:
-    branches:
-      - main
-      - master
-    paths:
-      - 'XCODE/**'
-  pull_request:
-    branches:
-      - main
-      - master
 
 jobs:
   build-ipa:
