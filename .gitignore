@@ -24,7 +24,9 @@
 auto_build_ipa.py
 AUTO_BUILD_GUIDE.md
 QUICK_START.md
+RUN.md
 requirements.txt
+set_token.ps1
 
 # Output directories from auto_build_ipa.py
 output/
