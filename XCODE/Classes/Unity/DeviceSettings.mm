@@ -94,7 +94,7 @@ extern "C" const char* UnityAdIdentifier()
 
 extern "C" int UnityGetLowPowerModeEnabled()
 {
-    return [[NSProcessInfo processInfo] isLowPowerModeEnabled] ? 1 : 0;
+    return [NSProcessInfo processInfo].lowPowerModeEnabled ? 1 : 0;
 }
 
 extern "C" int UnityGetWantsSoftwareDimming()
@@ -118,7 +118,7 @@ extern "C" void UnitySetWantsSoftwareDimming(int enabled)
 extern "C" int UnityGetIosAppOnMac()
 {
     if (@available(iOS 14, tvOS 14, *))
-        return [[NSProcessInfo processInfo] isiOSAppOnMac] ? 1 : 0;
+        return [NSProcessInfo processInfo].iOSAppOnMac ? 1 : 0;
     return 0;
 }
 
@@ -474,7 +474,11 @@ extern "C" int UnityDeviceIsStylusTouchSupported()
 
 extern "C" int UnityDeviceCanShowWideColor()
 {
+#if PLATFORM_VISIONOS
+    return 1;
+#else
     return UnityGetUnityView().traitCollection.displayGamut == UIDisplayGamutP3;
+#endif
 }
 
 extern "C" float UnityDeviceDPI()

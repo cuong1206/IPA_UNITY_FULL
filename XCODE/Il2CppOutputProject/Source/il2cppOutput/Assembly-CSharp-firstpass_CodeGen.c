@@ -1,9 +1,4 @@
 ﻿#include "pch-c.h"
-#ifndef _MSC_VER
-# include <alloca.h>
-#else
-# include <malloc.h>
-#endif
 
 
 #include "codegen/il2cpp-codegen-metadata.h"
@@ -41,18 +36,18 @@ static Il2CppMethodPointer s_methodPointers[12] =
 };
 static const int32_t s_InvokerIndices[12] = 
 {
-	7205,
-	2735,
-	2735,
-	2735,
-	2735,
-	2214,
-	2694,
-	2735,
-	2735,
-	2735,
-	2735,
-	2198,
+	5872,
+	3576,
+	3576,
+	3576,
+	3576,
+	2823,
+	3527,
+	3576,
+	3576,
+	3576,
+	3576,
+	2800,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_AssemblyU2DCSharpU2Dfirstpass_CodeGenModule;
 const Il2CppCodeGenModule g_AssemblyU2DCSharpU2Dfirstpass_CodeGenModule = 
