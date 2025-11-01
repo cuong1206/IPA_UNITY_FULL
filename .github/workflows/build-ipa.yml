@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       build_configuration:
-      description: 'Build configuration (Release or Debug)'
-      required: false
-      default: 'Release'
-      type: choice
-      options:
-        - Release
-        - Debug
+        description: 'Build configuration (Release or Debug)'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
   push:
     branches:
       - main
