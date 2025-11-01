@@ -20,3 +20,8 @@
 [Oo]bj/
 [Ll]ibrary/
 
+# Output directories from auto_build_ipa.py
+output/
+release/
+debug/
+my_builds/
