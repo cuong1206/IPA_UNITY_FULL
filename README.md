@@ -27,31 +27,7 @@ Dự án [iOS_iPA](https://github.com/AmirBayat0/iOS_iPA) của AmirBayat0:
 
 ## 🚀 Hướng dẫn sử dụng nhanh
 
-### Cách 1: Tự động hoàn toàn (Khuyến nghị) ⚡
-
-**Chỉ cần 1 lệnh, nhận IPA tự động!**
-
-```bash
-# Cài đặt thư viện (chỉ lần đầu)
-pip install -r requirements.txt
-
-# Tạo GitHub token tại: https://github.com/settings/tokens
-# Quyền cần: repo, workflow, actions:read
-
-# Set token (Windows PowerShell)
-$env:GITHUB_TOKEN="ghp_your_token_here"
-
-# Build IPA tự động (push → build → download)
-python auto_build_ipa.py
-
-# File IPA sẽ ở: output/NROFLY.ipa
-```
-
-📖 **Chi tiết**: Xem [AUTO_BUILD_GUIDE.md](AUTO_BUILD_GUIDE.md)
-
----
-
-### Cách 2: Thủ công qua GitHub Actions
+### Chạy Build qua GitHub Actions
 
 1. Vào GitHub repository → Tab **Actions**
 2. Click **Run workflow** → Chọn configuration → **Run workflow**
@@ -69,15 +45,12 @@ python auto_build_ipa.py
 E:\IOSBUILD\
 ├── .github/
 │   └── workflows/
-│       └── build-ipa.yml           # GitHub Actions workflow
-├── XCODE/                           # Unity Xcode project
+│       └── build-ipa.yml      # GitHub Actions workflow
+├── XCODE/                      # Unity Xcode project
 │   ├── Unity-iPhone.xcodeproj
 │   └── ...
-├── auto_build_ipa.py                # 🚀 Tool tự động build IPA
-├── AUTO_BUILD_GUIDE.md              # Hướng dẫn tool tự động
-├── requirements.txt                 # Python dependencies
-├── build_ipa_guide.md               # Hướng dẫn manual
-└── README.md                        # File này
+├── build_ipa_guide.md          # Hướng dẫn chi tiết
+└── README.md                   # File này
 ```
 
 ## Thông tin dự án Unity
@@ -88,8 +61,7 @@ E:\IOSBUILD\
 
 ## 📚 Tài liệu
 
-- 🚀 **[AUTO_BUILD_GUIDE.md](AUTO_BUILD_GUIDE.md)** - Hướng dẫn tool tự động (Khuyến nghị)
-- 📖 **[build_ipa_guide.md](build_ipa_guide.md)** - Hướng dẫn build thủ công qua GitHub Actions
+📖 Xem [build_ipa_guide.md](build_ipa_guide.md) để biết hướng dẫn chi tiết.
 
 ## Lưu ý quan trọng
 

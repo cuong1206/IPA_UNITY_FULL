@@ -1,3 +1,0 @@
-# Requirements for Auto Build IPA Tool
-requests>=2.28.0
-

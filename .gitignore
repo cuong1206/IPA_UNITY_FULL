@@ -20,6 +20,12 @@
 [Oo]bj/
 [Ll]ibrary/
 
+# Python tool (local only, not pushed to GitHub)
+auto_build_ipa.py
+AUTO_BUILD_GUIDE.md
+QUICK_START.md
+requirements.txt
+
 # Output directories from auto_build_ipa.py
 output/
 release/
