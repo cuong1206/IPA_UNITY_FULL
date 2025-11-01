@@ -27,8 +27,20 @@ jobs:
     runs-on: macos-latest
     
     steps:
-    - name: Checkout repository
+    - name: Checkout repository (with Git LFS)
       uses: actions/checkout@v4
+      with:
+        lfs: true
+        fetch-depth: 0
+
+    - name: Ensure Git LFS files are present
+      run: |
+        git lfs version || true
+        git lfs fetch --all || true
+        git lfs checkout || true
+        echo "Top large files in XCODE after LFS checkout (if any):"
+        cd XCODE
+        /usr/bin/find . -type f -size +50M -print 2>/dev/null | head -20 || true
       
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
