@@ -1,0 +1,22 @@
+# Build artifacts (không ignore build để đẩy đủ file theo yêu cầu)
+# XCODE/build/
+*.xcarchive
+*.ipa
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.log
+
+# Unity (if any)
+[Tt]emp/
+[Oo]bj/
+[Ll]ibrary/
+

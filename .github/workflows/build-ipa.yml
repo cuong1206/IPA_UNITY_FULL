@@ -1,0 +1,227 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_configuration:
+      description: 'Build configuration (Release or Debug)'
+      required: false
+      default: 'Release'
+      type: choice
+      options:
+        - Release
+        - Debug
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'XCODE/**'
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-ipa:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: Show Xcode version
+      run: xcodebuild -version
+      
+    - name: List available simulators
+      run: xcrun simctl list devices available
+      
+    - name: Set build configuration
+      id: config
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          CONFIG="${{ github.event.inputs.build_configuration }}"
+        else
+          CONFIG="Release"
+        fi
+        echo "config=$CONFIG" >> $GITHUB_OUTPUT
+        echo "Build configuration: $CONFIG"
+        
+    - name: Navigate to XCODE directory
+      run: cd XCODE && pwd && ls -la
+      
+    - name: Show project structure
+      run: |
+        cd XCODE
+        xcodebuild -list -project Unity-iPhone.xcodeproj || true
+        
+    - name: Build and Archive
+      run: |
+        cd XCODE
+        
+        # Build configuration
+        BUILD_CONFIG="${{ steps.config.outputs.config }}"
+        SCHEME="Unity-iPhone"
+        ARCHIVE_PATH="./build/Unity-iPhone.xcarchive"
+        EXPORT_PATH="./build/export"
+        
+        # Create build directories
+        mkdir -p build/export
+        
+        # Clean previous builds
+        xcodebuild clean \
+          -project Unity-iPhone.xcodeproj \
+          -scheme "$SCHEME" \
+          -configuration "$BUILD_CONFIG" || true
+        
+        # Build and archive without code signing (for unsigned IPA)
+        xcodebuild archive \
+          -project Unity-iPhone.xcodeproj \
+          -scheme "$SCHEME" \
+          -configuration "$BUILD_CONFIG" \
+          -archivePath "$ARCHIVE_PATH" \
+          -allowProvisioningUpdates \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          -destination "generic/platform=iOS" || {
+            echo "Archive with no signing failed, trying with automatic signing..."
+            xcodebuild archive \
+              -project Unity-iPhone.xcodeproj \
+              -scheme "$SCHEME" \
+              -configuration "$BUILD_CONFIG" \
+              -archivePath "$ARCHIVE_PATH" \
+              -destination "generic/platform=iOS"
+          }
+        
+    - name: Export IPA
+      run: |
+        cd XCODE
+        
+        ARCHIVE_PATH="./build/Unity-iPhone.xcarchive"
+        EXPORT_PATH="./build/export"
+        SCHEME="Unity-iPhone"
+        BUILD_CONFIG="${{ steps.config.outputs.config }}"
+        
+        # Create export options plist without code signing
+        mkdir -p "$EXPORT_PATH"
+        /usr/libexec/PlistBuddy -c "Add :method string development" "$EXPORT_PATH/ExportOptions.plist" 2>/dev/null || true
+        /usr/libexec/PlistBuddy -c "Add :signingStyle string manual" "$EXPORT_PATH/ExportOptions.plist" 2>/dev/null || true
+        /usr/libexec/PlistBuddy -c "Add :stripSwiftSymbols bool true" "$EXPORT_PATH/ExportOptions.plist" 2>/dev/null || true
+        
+        # Alternative: Create plist using echo if PlistBuddy fails
+        if [ ! -f "$EXPORT_PATH/ExportOptions.plist" ]; then
+          echo '<?xml version="1.0" encoding="UTF-8"?>' > "$EXPORT_PATH/ExportOptions.plist"
+          echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '<plist version="1.0">' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '<dict>' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '    <key>method</key>' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '    <string>development</string>' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '    <key>signingStyle</key>' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '    <string>manual</string>' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '    <key>stripSwiftSymbols</key>' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '    <true/>' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '</dict>' >> "$EXPORT_PATH/ExportOptions.plist"
+          echo '</plist>' >> "$EXPORT_PATH/ExportOptions.plist"
+        fi
+        
+        # Export IPA (this may still require some signing, but minimal)
+        xcodebuild -exportArchive \
+          -archivePath "$ARCHIVE_PATH" \
+          -exportPath "$EXPORT_PATH" \
+          -exportOptionsPlist "$EXPORT_PATH/ExportOptions.plist" \
+          -allowProvisioningUpdates || {
+            echo "Export failed. Attempting manual IPA creation from .app..."
+            
+            # Alternative: Create IPA manually from .app bundle
+            if [ -d "$ARCHIVE_PATH/Products/Applications" ]; then
+              APP_BUNDLE=$(find "$ARCHIVE_PATH/Products/Applications" -name "*.app" -type d | head -1)
+              if [ -n "$APP_BUNDLE" ]; then
+                APP_NAME=$(basename "$APP_BUNDLE" .app)
+                IPA_NAME="${APP_NAME}.ipa"
+                
+                # Create Payload directory
+                mkdir -p "$EXPORT_PATH/Payload"
+                cp -R "$APP_BUNDLE" "$EXPORT_PATH/Payload/"
+                
+                # Create IPA
+                cd "$EXPORT_PATH"
+                zip -r "$IPA_NAME" Payload/
+                cd ../..
+                
+                echo "IPA created manually: $EXPORT_PATH/$IPA_NAME"
+              fi
+            fi
+          }
+        
+    - name: Find and list IPA files
+      run: |
+        cd XCODE
+        find ./build -name "*.ipa" -type f || echo "No IPA files found with .ipa extension"
+        find ./build -name "*.app" -type d || echo "No .app bundles found"
+        
+    - name: Create IPA manually if needed
+      run: |
+        cd XCODE
+        ARCHIVE_PATH="./build/Unity-iPhone.xcarchive"
+        EXPORT_PATH="./build/export"
+        
+        # Try to find .app bundle in archive
+        if [ -d "$ARCHIVE_PATH/Products/Applications" ]; then
+          APP_BUNDLE=$(find "$ARCHIVE_PATH/Products/Applications" -name "*.app" -type d | head -1)
+          
+          if [ -n "$APP_BUNDLE" ]; then
+            APP_NAME=$(basename "$APP_BUNDLE" .app)
+            IPA_NAME="${APP_NAME}.ipa"
+            
+            echo "Found app bundle: $APP_BUNDLE"
+            echo "Creating IPA: $IPA_NAME"
+            
+            # Clean previous Payload
+            rm -rf "$EXPORT_PATH/Payload"
+            
+            # Create Payload directory and copy app
+            mkdir -p "$EXPORT_PATH/Payload"
+            cp -R "$APP_BUNDLE" "$EXPORT_PATH/Payload/"
+            
+            # Create IPA
+            cd "$EXPORT_PATH"
+            zip -r "$IPA_NAME" Payload/ -q
+            cd ../..
+            
+            echo "IPA created successfully: $EXPORT_PATH/$IPA_NAME"
+            ls -lh "$EXPORT_PATH/$IPA_NAME"
+          else
+            echo "No .app bundle found in archive"
+            ls -la "$ARCHIVE_PATH/Products/Applications/" || true
+          fi
+        else
+          echo "Archive Products/Applications directory not found"
+          find "$ARCHIVE_PATH" -type d | head -20
+        fi
+        
+    - name: Upload IPA artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-ipa
+        path: |
+          XCODE/build/export/*.ipa
+          XCODE/build/Unity-iPhone.xcarchive
+        retention-days: 30
+        if-no-files-found: warn
+        
+    - name: Upload build logs
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: build-logs
+        path: |
+          XCODE/build/**
+        retention-days: 7
+
