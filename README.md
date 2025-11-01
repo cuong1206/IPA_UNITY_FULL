@@ -25,19 +25,33 @@ Dự án [iOS_iPA](https://github.com/AmirBayat0/iOS_iPA) của AmirBayat0:
 - Tạo file IPA không cần code signing
 - Upload IPA dưới dạng artifact để download
 
-## Hướng dẫn sử dụng nhanh
+## 🚀 Hướng dẫn sử dụng nhanh
 
-### 1. Setup GitHub Repository
+### Cách 1: Tự động hoàn toàn (Khuyến nghị) ⚡
+
+**Chỉ cần 1 lệnh, nhận IPA tự động!**
 
 ```bash
-git init
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-git add .
-git commit -m "Initial commit"
-git push -u origin main
+# Cài đặt thư viện (chỉ lần đầu)
+pip install -r requirements.txt
+
+# Tạo GitHub token tại: https://github.com/settings/tokens
+# Quyền cần: repo, workflow, actions:read
+
+# Set token (Windows PowerShell)
+$env:GITHUB_TOKEN="ghp_your_token_here"
+
+# Build IPA tự động (push → build → download)
+python auto_build_ipa.py
+
+# File IPA sẽ ở: output/NROFLY.ipa
 ```
 
-### 2. Chạy Build
+📖 **Chi tiết**: Xem [AUTO_BUILD_GUIDE.md](AUTO_BUILD_GUIDE.md)
+
+---
+
+### Cách 2: Thủ công qua GitHub Actions
 
 1. Vào GitHub repository → Tab **Actions**
 2. Click **Run workflow** → Chọn configuration → **Run workflow**
@@ -55,12 +69,15 @@ git push -u origin main
 E:\IOSBUILD\
 ├── .github/
 │   └── workflows/
-│       └── build-ipa.yml      # GitHub Actions workflow
-├── XCODE/                      # Unity Xcode project
+│       └── build-ipa.yml           # GitHub Actions workflow
+├── XCODE/                           # Unity Xcode project
 │   ├── Unity-iPhone.xcodeproj
 │   └── ...
-├── build_ipa_guide.md          # Hướng dẫn chi tiết
-└── README.md                   # File này
+├── auto_build_ipa.py                # 🚀 Tool tự động build IPA
+├── AUTO_BUILD_GUIDE.md              # Hướng dẫn tool tự động
+├── requirements.txt                 # Python dependencies
+├── build_ipa_guide.md               # Hướng dẫn manual
+└── README.md                        # File này
 ```
 
 ## Thông tin dự án Unity
@@ -69,9 +86,10 @@ E:\IOSBUILD\
 - **Bundle ID**: `com.NROFLY.NRO-FLY`
 - **Product Name**: `NROFLY`
 
-## Tài liệu
+## 📚 Tài liệu
 
-📖 Xem [build_ipa_guide.md](build_ipa_guide.md) để biết hướng dẫn chi tiết.
+- 🚀 **[AUTO_BUILD_GUIDE.md](AUTO_BUILD_GUIDE.md)** - Hướng dẫn tool tự động (Khuyến nghị)
+- 📖 **[build_ipa_guide.md](build_ipa_guide.md)** - Hướng dẫn build thủ công qua GitHub Actions
 
 ## Lưu ý quan trọng
 
